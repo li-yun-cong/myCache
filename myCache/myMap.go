@@ -1,6 +1,7 @@
 package myCache
 
 import (
+	"errors"
 	"sync"
 	"time"
 )
@@ -50,7 +51,7 @@ func (c *MyCache[K, V]) Set(key K, value V, expire ...time.Duration) {
 }
 
 // Get 获取缓存值，返回值和是否存在
-func (c *MyCache[K, V]) Get(key K) (V, int) {
+func (c *MyCache[K, V]) Get(key K) (V, error) {
 	c.mu.RLock()
 	item, exists := c.items[key]
 	c.mu.RUnlock()
@@ -59,7 +60,7 @@ func (c *MyCache[K, V]) Get(key K) (V, int) {
 	if !exists {
 		var zero V
 		// -1 代表数据找不到
-		return zero, -1
+		return zero, errors.New("缓存中不存在指定键")
 	}
 
 	// 检查是否过期
@@ -73,9 +74,32 @@ func (c *MyCache[K, V]) Get(key K) (V, int) {
 		if nowTime.Sub(dataTime) > item.Expire {
 			var zero V
 			// 0 代表数据过期
-			return zero, 0
+			return zero, errors.New("缓存中指定键数据已经过期")
 		}
 	}
 	// 1代表数据找到且在有效时间内
-	return item.Value, 1
+	return item.Value, nil
+}
+
+// GetAll 获取全部缓存值
+func (c *MyCache[K, V]) GetAll() map[K]V {
+	var allDatas map[K]V
+	allDatas = make(map[K]V, len(c.items))
+	for key, value := range c.items {
+		allDatas[key] = value.Value
+	}
+	return allDatas
+}
+
+// Delete 删除指定键
+func (c *MyCache[K, V]) Delete(key K) (err error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	_, exists := c.items[key]
+	// 如果不存在，返回
+	if !exists {
+		return errors.New("缓存中不存在指定键")
+	}
+	delete(c.items, key)
+	return nil
 }
