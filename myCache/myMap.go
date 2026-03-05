@@ -50,6 +50,15 @@ func (c *MyCache[K, V]) Set(key K, value V, expire ...time.Duration) {
 
 }
 
+// Update 更新缓存，不允许重新设置数据过期时间
+func (c *MyCache[K, V]) Update(key K, value V) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.items[key] = &Item[V]{
+		Value: value,
+	}
+}
+
 // Get 获取缓存值，返回值和是否存在
 func (c *MyCache[K, V]) Get(key K) (V, error) {
 	c.mu.RLock()
