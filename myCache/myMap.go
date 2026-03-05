@@ -103,3 +103,19 @@ func (c *MyCache[K, V]) Delete(key K) (err error) {
 	delete(c.items, key)
 	return nil
 }
+
+// DeleteByKeys 批量删除指定键
+func (c *MyCache[K, V]) DeleteByKeys(keys []K) (deleteKeys []K, err error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	for _, key := range keys {
+		_, exists := c.items[key]
+		// 如果不存在，返回
+		if !exists {
+			continue
+		}
+		delete(c.items, key)
+		deleteKeys = append(deleteKeys, key)
+	}
+	return deleteKeys, nil
+}
