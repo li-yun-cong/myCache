@@ -128,3 +128,10 @@ func (c *MyCache[K, V]) DeleteByKeys(keys []K) (deleteKeys []K, err error) {
 	}
 	return deleteKeys, nil
 }
+
+// Clear 清空缓存
+func (c *MyCache[K, V]) Clear() {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	c.items = make(map[K]*Item[V])
+}
