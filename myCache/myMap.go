@@ -74,9 +74,6 @@ func (c *MyCache[K, V]) Get(key K) (V, error) {
 
 	// 检查是否过期
 	if item.Expire >= 0 {
-		c.mu.Lock()
-		defer c.mu.Unlock()
-
 		// 获取当前时间
 		dataTime := c.GetDataTime(item.Value)
 		nowTime := time.Now()
