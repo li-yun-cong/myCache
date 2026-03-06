@@ -62,7 +62,7 @@ func (c *MyCache[K, V]) Update(key K, value V) {
 // Get 获取缓存值，返回值和是否存在
 func (c *MyCache[K, V]) Get(key K) (V, error) {
 	c.mu.RLock()
-	defer c.mu.Unlock()
+	defer c.mu.RUnlock()
 	item, exists := c.items[key]
 
 	// 如果不存在，返回零值和false
@@ -90,7 +90,7 @@ func (c *MyCache[K, V]) Get(key K) (V, error) {
 // GetAll 获取全部缓存值
 func (c *MyCache[K, V]) GetAll() map[K]V {
 	c.mu.RLock()
-	defer c.mu.Unlock()
+	defer c.mu.RUnlock()
 	var allDatas map[K]V
 	allDatas = make(map[K]V, len(c.items))
 	for key, value := range c.items {
@@ -101,8 +101,8 @@ func (c *MyCache[K, V]) GetAll() map[K]V {
 
 // Delete 删除指定键
 func (c *MyCache[K, V]) Delete(key K) (err error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	_, exists := c.items[key]
 	// 如果不存在，返回
 	if !exists {
@@ -114,8 +114,8 @@ func (c *MyCache[K, V]) Delete(key K) (err error) {
 
 // DeleteByKeys 批量删除指定键
 func (c *MyCache[K, V]) DeleteByKeys(keys []K) (deleteKeys []K, err error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for _, key := range keys {
 		_, exists := c.items[key]
 		// 如果不存在，返回
@@ -130,7 +130,7 @@ func (c *MyCache[K, V]) DeleteByKeys(keys []K) (deleteKeys []K, err error) {
 
 // Clear 清空缓存
 func (c *MyCache[K, V]) Clear() {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.items = make(map[K]*Item[V])
 }
