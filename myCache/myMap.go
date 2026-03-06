@@ -62,8 +62,8 @@ func (c *MyCache[K, V]) Update(key K, value V) {
 // Get 获取缓存值，返回值和是否存在
 func (c *MyCache[K, V]) Get(key K) (V, error) {
 	c.mu.RLock()
+	defer c.mu.Unlock()
 	item, exists := c.items[key]
-	c.mu.RUnlock()
 
 	// 如果不存在，返回零值和false
 	if !exists {
@@ -92,6 +92,8 @@ func (c *MyCache[K, V]) Get(key K) (V, error) {
 
 // GetAll 获取全部缓存值
 func (c *MyCache[K, V]) GetAll() map[K]V {
+	c.mu.RLock()
+	defer c.mu.Unlock()
 	var allDatas map[K]V
 	allDatas = make(map[K]V, len(c.items))
 	for key, value := range c.items {
